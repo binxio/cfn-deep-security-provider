@@ -5,11 +5,6 @@ WORKDIR /lambda
 ADD requirements.txt /tmp
 RUN pip install -t /lambda -r /tmp/requirements.txt
 
-RUN curl -sS -o /tmp/dsm-py-sdk.zip https://automation.deepsecurity.trendmicro.com/wp-content/sdk/11_3/on-premise/v1/dsm-py-sdk.zip && \
-    unzip -d /tmp/deepsecurity /tmp/dsm-py-sdk.zip && \
-    cd /tmp/deepsecurity && \
-    pip install -t /lambda .
-
 ADD src/ /lambda/
 RUN find /lambda -type d | xargs -n 1 -I {} chmod ugo+rx "{}" && \
     find /lambda -type f | xargs -n 1 -I {} chmod ugo+r "{}"

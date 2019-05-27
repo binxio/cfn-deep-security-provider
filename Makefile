@@ -54,17 +54,11 @@ target/$(NAME)-$(VERSION).zip: src/*.py requirements.txt Dockerfile.lambda
 		docker rm -f $$ID && \
 		chmod ugo+r target/$(NAME)-$(VERSION).zip
 
-venv: requirements.txt target/dsm-py-sdk.zip
+venv: requirements.txt
 	virtualenv -p python3 venv  && \
 	. ./venv/bin/activate && \
 	pip install --quiet --upgrade pip && \
-	pip install --quiet -r requirements.txt && \
-        pip install -t ./venv target/dsm-py-sdk
-
-target/dsm-py-sdk.zip:
-	mkdir -p target
-	curl -sS -o target/dsm-py-sdk.zip https://automation.deepsecurity.trendmicro.com/wp-content/sdk/11_3/on-premise/v1/dsm-py-sdk.zip
-	unzip -d target/dsm-py-sdk /tmp/dsm-py-sdk.zip
+	pip install --quiet -r requirements.txt
 
 clean:
 	rm -rf venv target
