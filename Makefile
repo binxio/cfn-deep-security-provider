@@ -54,12 +54,18 @@ target/$(NAME)-$(VERSION).zip: src/*.py requirements.txt Dockerfile.lambda
 		docker rm -f $$ID && \
 		chmod ugo+r target/$(NAME)-$(VERSION).zip
 
-venv: requirements.txt
+venv: requirements.txt target/dsm-py-sdk.zip
 	virtualenv -p python3 venv  && \
 	. ./venv/bin/activate && \
 	pip install --quiet --upgrade pip && \
-	pip install --quiet -r requirements.txt 
-	
+	pip install --quiet -r requirements.txt && \
+        pip install -t ./venv target/dsm-py-sdk
+
+target/dsm-py-sdk.zip:
+	mkdir -p target
+	curl -sS -o target/dsm-py-sdk.zip https://automation.deepsecurity.trendmicro.com/wp-content/sdk/11_3/on-premise/v1/dsm-py-sdk.zip
+	unzip -d target/dsm-py-sdk /tmp/dsm-py-sdk.zip
+
 clean:
 	rm -rf venv target
 	rm -rf src/*.pyc tests/*.pyc
@@ -73,8 +79,8 @@ test: venv
 	cd src && \
         PYTHONPATH=$(PWD)/src pytest ../tests/test*.py
 
-autopep:
-	autopep8 --experimental --in-place --max-line-length 132 src/*.py tests/*.py
+fmt:
+	black src/*.py tests/*.py
 
 deploy-provider:
 	@set -x ;if aws cloudformation get-template-summary --stack-name $(NAME) >/dev/null 2>&1 ; then \
