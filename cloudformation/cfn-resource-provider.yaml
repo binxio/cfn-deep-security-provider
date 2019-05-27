@@ -6,7 +6,7 @@ Parameters:
     Default: ''
   CFNCustomProviderZipFileName:
     Type: String
-    Default: lambdas/cfn-deep-security-provider-latest.zip
+    Default: lambdas/cfn-deep-security-provider-0.1.0.zip
 Conditions:
   UsePublicBucket: !Equals
     - !Ref 'LambdaS3Bucket'
