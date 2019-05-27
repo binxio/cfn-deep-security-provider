@@ -1,0 +1,16 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Deep Security Demo Configuration
+Resources:
+  Context:
+    Type: Custom::DeepSecurityContext
+    Properties:
+      Value:
+        name: My Context
+        description: Context
+        minimumAgentVersion: 6.0.0.0
+        localConnectionsEnabled: True
+        remoteConnectionsEnabled: False
+        noConnectionEnabled: False
+        noInternetEnabled: False
+        restrictedInterfacesEnabled: False
+      ServiceToken: !Sub 'arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:cfn-deep-security-provider'
