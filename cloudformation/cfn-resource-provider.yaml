@@ -25,7 +25,7 @@ Resources:
             Action:
               - ssm:GetParameter
             Resource:
-              - '/cfn-deep-security-provider/*'
+              - !Sub 'arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/cfn-deep-security-provider/*'
       Roles:
         - !Ref 'LambdaRole'
   LambdaRole:

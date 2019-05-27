@@ -12,5 +12,5 @@ Resources:
         remoteConnectionsEnabled: False
         noConnectionEnabled: False
         noInternetEnabled: False
-        restrictedInterfacesEnabled: False
+        restrictedInterfacesEnabled: True
       ServiceToken: !Sub 'arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:cfn-deep-security-provider'

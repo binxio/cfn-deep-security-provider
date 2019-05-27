@@ -100,11 +100,8 @@ demo:
 	fi ;\
 	aws cloudformation $$CFN_COMMAND-stack --stack-name $(NAME)-demo \
 		--template-body file://cloudformation/demo-stack.yaml  \
-		$$CFN_TIMEOUT \
-		--parameters 	ParameterKey=VPC,ParameterValue=$$VPC_ID \
-				ParameterKey=Subnets,ParameterValue=\"$$SUBNET_IDS\" \
-				ParameterKey=SecurityGroup,ParameterValue=$$SG_ID ;\
-	aws cloudformation wait stack-$$CFN_COMMAND-complete --stack-name $(NAME)-demo ;
+		$$CFN_TIMEOUT && \
+	aws cloudformation wait stack-$$CFN_COMMAND-complete --stack-name $(NAME)-demo;
 
 delete-demo:
 	aws cloudformation delete-stack --stack-name $(NAME)-demo
