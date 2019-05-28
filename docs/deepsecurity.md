@@ -13,7 +13,7 @@ To create a DeepSecurity resource using your your AWS CloudFormation template, u
 
       Connection:
         URL: 'https://app.deepsecurity.trendmicro.com/api'
-        ApiKeyParameterName: '/cfn-deep-security-provider/api-key'
+        ApiKeyParameterName: '/cfn-deep-security-provider/api_key'
 
       ServiceToken: !Sub 'arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:cfn-deep-security-provider'
 ```

@@ -54,6 +54,14 @@ class DeepSecurityProvider(ResourceProvider):
         return self.resource_type.replace("Custom::DeepSecurity", "")
 
     @property
+    def property_name_plural(self):
+        name = self.property_name.lower()
+        if name[-1] == 'y':
+                return '{}ies'.format(name[0:-1])
+        else:
+                return '{}s'.format(name)
+
+    @property
     def resource_url(self):
         return "{}/{}s".format(
             self.get("Connection", {}).get(
