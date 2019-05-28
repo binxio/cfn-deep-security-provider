@@ -56,18 +56,18 @@ class DeepSecurityProvider(ResourceProvider):
     @property
     def property_name_plural(self):
         name = self.property_name.lower()
-        if name[-1] == 'y':
-                return '{}ies'.format(name[0:-1])
+        if name[-1] == "y":
+            return "{}ies".format(name[0:-1])
         else:
-                return '{}s'.format(name)
+            return "{}s".format(name)
 
     @property
     def resource_url(self):
-        return "{}/{}s".format(
+        return "{}/{}".format(
             self.get("Connection", {}).get(
                 "URL", "https://app.deepsecurity.trendmicro.com/api"
             ),
-            self.property_name.lower(),
+            self.property_name_plural,
         )
 
     @property
@@ -112,7 +112,6 @@ class DeepSecurityProvider(ResourceProvider):
             response = requests.post(url, headers=self.headers, json=self.get("Value"))
             if response.status_code in (200, 201):
                 r = response.json()
-                self.physical_resource_id = str(r["ID"])
             else:
                 self.fail(
                     "Could not update the %s, %s" % (self.property_name, response.text)
