@@ -20,6 +20,11 @@ Resources:
     Properties:
       Value:
         name: My Policy
+        firewall:
+          state: 'on'
+          ruleIDs:
+          - !Ref FTPFirewallRule
+          - !Ref SMTPFirewallRule
       ServiceToken: !Sub 'arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:cfn-deep-security-provider'
 
   SMTPFirewallRule:
@@ -29,19 +34,9 @@ Resources:
       Type: firewallRule
       ServiceToken: !Sub 'arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:cfn-deep-security-provider'
 
-  PolicyAssignmentSMTPFirewallRule:
-    Type: Custom::DeepSecurityPolicyRuleAssignment
+  FTPFirewallRule:
+    Type: Custom::DeepSecurityLookup
     Properties:
-      PolicyID: !Ref Policy
-      RuleID: !Ref SMTPFirewallRule
-      Type: firewall
-      ServiceToken: !Sub 'arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:cfn-deep-security-provider'
-
-
-  PolicyAssignmentFTPFirewallRule:
-    Type: Custom::DeepSecurityPolicyRuleAssignment
-    Properties:
-      PolicyID: !Ref Policy
-      Type: firewall
-      RuleName: 'FTP Server'
+      Name: FTP Server
+      Type: firewallRule
       ServiceToken: !Sub 'arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:cfn-deep-security-provider'

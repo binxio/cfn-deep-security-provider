@@ -85,7 +85,8 @@ deploy-provider:
 	aws cloudformation $$CFN_COMMAND-stack \
 		--capabilities CAPABILITY_IAM \
 		--stack-name $(NAME) \
-		--template-body file://cloudformation/cfn-resource-provider.yaml ; \
+		--template-body file://cloudformation/cfn-resource-provider.yaml \
+		--parameters ParameterKey=CFNCustomProviderZipFileName,ParameterValue=lambdas/$(NAME)-$(VERSION).zip; \
 	aws cloudformation wait stack-$$CFN_COMMAND-complete --stack-name $(NAME) ;
 
 delete-provider:
