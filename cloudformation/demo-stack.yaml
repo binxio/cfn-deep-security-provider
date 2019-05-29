@@ -14,3 +14,34 @@ Resources:
         noInternetEnabled: False
         restrictedInterfacesEnabled: True
       ServiceToken: !Sub 'arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:cfn-deep-security-provider'
+
+  Policy:
+    Type: Custom::DeepSecurityPolicy
+    Properties:
+      Value:
+        name: My Policy
+      ServiceToken: !Sub 'arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:cfn-deep-security-provider'
+
+  SMTPFirewallRule:
+    Type: Custom::DeepSecurityLookup
+    Properties:
+      Name: SMTP Server
+      Type: firewallRule
+      ServiceToken: !Sub 'arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:cfn-deep-security-provider'
+
+  PolicyAssignmentSMTPFirewallRule:
+    Type: Custom::DeepSecurityPolicyRuleAssignment
+    Properties:
+      PolicyID: !Ref Policy
+      RuleID: !Ref SMTPFirewallRule
+      Type: firewall
+      ServiceToken: !Sub 'arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:cfn-deep-security-provider'
+
+
+  PolicyAssignmentFTPFirewallRule:
+    Type: Custom::DeepSecurityPolicyRuleAssignment
+    Properties:
+      PolicyID: !Ref Policy
+      Type: firewall
+      RuleName: 'FTP Server'
+      ServiceToken: !Sub 'arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:cfn-deep-security-provider'

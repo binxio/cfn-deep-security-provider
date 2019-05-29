@@ -31,9 +31,12 @@ request_schema = {
                     "description": "Name of the parameter in the Parameter Store for the API key",
                 },
             },
+        },
+        "Value": {
+            "type": "object",
+            "description": "values for this resource"
         }
-    },
-    "Value": {"type": "object", "description": "values for this resource"},
+    }
 }
 
 
@@ -57,18 +60,17 @@ class DeepSecurityProvider(ResourceProvider):
     def property_name_plural(self):
         name = self.property_name.lower()
         if name[-1] == "y":
-            return "{}ies".format(name[0:-1])
+            return f"{name[0:-1]}ies"
         else:
-            return "{}s".format(name)
+            return f"{name}s"
+
+    @property
+    def api_endpoint(self):
+        return self.get("Connection", {}).get("URL", "https://app.deepsecurity.trendmicro.com/api" )
 
     @property
     def resource_url(self):
-        return "{}/{}".format(
-            self.get("Connection", {}).get(
-                "URL", "https://app.deepsecurity.trendmicro.com/api"
-            ),
-            self.property_name_plural,
-        )
+        return f"{self.api_endpoint}/{self.property_name_plural}"
 
     @property
     def api_key_parameter_name(self):
