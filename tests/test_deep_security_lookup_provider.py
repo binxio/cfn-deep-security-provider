@@ -25,6 +25,7 @@ def test_search_criteria():
     assert response["PhysicalResourceId"] is not None
     assert response["PhysicalResourceId"] == rule_id
 
+
 def test_search_shorthand():
     request = Request("Create", "firewallRule", name="SMTP Server")
     response = handler(request, {})
@@ -36,7 +37,9 @@ def test_search_shorthand():
 def test_search_combined():
     search = {
         "maxItems": 2,
-        "searchCriteria": [{"fieldName": "name", "stringValue": "SMTP%", "stringWildcards": True}],
+        "searchCriteria": [
+            {"fieldName": "name", "stringValue": "SMTP%", "stringWildcards": True}
+        ],
     }
     request = Request("Create", "firewallRule", search=search, name="SMTP Server")
     response = handler(request, {})
@@ -46,7 +49,14 @@ def test_search_combined():
 
 
 class Request(dict):
-    def __init__(self, request_type, resource_type, search=None, name=None, physical_resource_id=None):
+    def __init__(
+        self,
+        request_type,
+        resource_type,
+        search=None,
+        name=None,
+        physical_resource_id=None,
+    ):
         request_id = "request-%s" % uuid.uuid4()
         self.update(
             {

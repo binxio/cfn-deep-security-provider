@@ -5,6 +5,7 @@ objects = {}
 cfn_deleted = {}
 log = logging.getLogger()
 
+
 def cfn(handler, request, context):
     if request["RequestType"] == "Create":
         response = handler(request, context)

@@ -1,9 +1,10 @@
 import os
+import json
 import logging
 import boto3
 import requests
 from cfn_resource_provider import ResourceProvider
-
+from template_substitutor import TemplateSubstitutor
 
 log = logging.getLogger()
 log.setLevel(os.environ.get("LOG_LEVEL", "INFO"))
@@ -32,11 +33,8 @@ request_schema = {
                 },
             },
         },
-        "Value": {
-            "type": "object",
-            "description": "values for this resource"
-        }
-    }
+        "Value": {"type": "object", "description": "values for this resource"},
+    },
 }
 
 
@@ -66,7 +64,9 @@ class DeepSecurityProvider(ResourceProvider):
 
     @property
     def api_endpoint(self):
-        return self.get("Connection", {}).get("URL", "https://app.deepsecurity.trendmicro.com/api" )
+        return self.get("Connection", {}).get(
+            "URL", "https://app.deepsecurity.trendmicro.com/api"
+        )
 
     @property
     def resource_url(self):
@@ -82,17 +82,40 @@ class DeepSecurityProvider(ResourceProvider):
         value = self.ssm.get_parameter(Name=name, WithDecryption=True)
         return value["Parameter"]["Value"]
 
+    @property
+    def api_key(self):
+        return self.get_ssm_parameter(self.api_key_parameter_name)
+
+    @property
+    def api_version(self):
+        return self.get("Connection", {}).get("Version", "v1")
+
     def add_api_key(self):
-        self.headers["api-secret-key"] = self.get_ssm_parameter(
-            self.api_key_parameter_name
+        self.headers["api-secret-key"] = self.api_key
+        self.headers["api-version"] = self.api_version
+
+    def get_resolved_value(self):
+        substitutor = TemplateSubstitutor(
+            self.api_endpoint, self.api_key, self.api_version
         )
-        self.headers["api-version"] = self.get("Connection", {}).get("Version", "v1")
+        result, err = substitutor.replace_lookups(
+            json.loads(json.dumps(self.get("Value")))
+        )
+        if err:
+            self.fail(", ".join(err))
+        return result if not err else None
 
     def create(self):
+
         self.add_api_key()
+
+        value = self.get_resolved_value()
+        if not value:
+            return
+
         try:
             response = requests.post(
-                self.resource_url, headers=self.headers, json=self.get("Value")
+                self.resource_url, headers=self.headers, json=value
             )
             if response.status_code in (200, 201):
                 r = response.json()
@@ -107,11 +130,16 @@ class DeepSecurityProvider(ResourceProvider):
             self.fail("Could not create the %s, %s" % (self.property_name, str(e)))
 
     def update(self):
+
         self.add_api_key()
         url = "%s/%s" % (self.resource_url, self.physical_resource_id)
 
+        value = self.get_resolved_value()
+        if not value:
+            return
+
         try:
-            response = requests.post(url, headers=self.headers, json=self.get("Value"))
+            response = requests.post(url, headers=self.headers, json=value)
             if response.status_code in (200, 201):
                 r = response.json()
             else:

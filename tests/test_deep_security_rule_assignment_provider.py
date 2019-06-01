@@ -13,9 +13,7 @@ def test_create_assignment():
     response = {"PhysicalResourceId": "could-not-create"}
     try:
         name = "u{}".format(uuid.uuid4())
-        policy = {
-            "name": name
-        }
+        policy = {"name": name}
         request = ResourceRequest("Create", "Policy", policy)
         response = cfn(handler, request, {})
         assert response["Status"] == "SUCCESS", response["Reason"]
@@ -42,9 +40,16 @@ def test_create_assignment():
         delete_all_resources(handler)
 
 
-
 class Request(dict):
-    def __init__(self, request_type, assignment_type, policy_id, rule_id=None, rule_name=None, physical_resource_id=None):
+    def __init__(
+        self,
+        request_type,
+        assignment_type,
+        policy_id,
+        rule_id=None,
+        rule_name=None,
+        physical_resource_id=None,
+    ):
         request_id = "request-%s" % uuid.uuid4()
         self.update(
             {
@@ -54,7 +59,7 @@ class Request(dict):
                 "RequestId": request_id,
                 "ResourceType": "Custom::DeepSecurityPolicyRuleAssignment",
                 "LogicalResourceId": f"MyCustom{assignment_type}",
-                "ResourceProperties": {"Type": assignment_type, "PolicyID": policy_id}
+                "ResourceProperties": {"Type": assignment_type, "PolicyID": policy_id},
             }
         )
         if rule_id:
