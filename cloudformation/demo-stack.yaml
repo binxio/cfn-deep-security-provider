@@ -20,9 +20,59 @@ Resources:
     Properties:
       Value:
         name: My Policy
+        parentID: '{{lookup "policy" "Linux Server"}}'
         firewall:
           state: 'on'
           ruleIDs:
             - '{{lookup "firewallRule" "FTP Server"}}'
             - '{{lookup "firewallRule" "SMTP Server"}}'
       ServiceToken: !Sub 'arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:cfn-deep-security-provider'
+
+  FirewallRule:
+    Type: Custom::DeepSecurityFirewallRule
+    Properties:
+      Value:
+        name: RDP Server
+        description: Allow incoming traffic to an RDP Server
+        action: allow
+        priority: '0'
+        direction: incoming
+        frameType: ip
+        frameNumber: 2048
+        frameNot: false
+        protocol: tcp
+        protocolNot: false
+        sourceIPType: any
+        sourceIPNot: false
+        sourceMACType: any
+        sourceMACNot: false
+        sourcePortType: any
+        sourcePortNot: false
+        destinationIPType: any
+        destinationIPNot: false
+        destinationMACType: any
+        destinationMACNot: false
+        destinationPortType: port-list
+        destinationPortListID: !Ref RDPPortList
+        destinationPortNot: false
+        anyFlags: true
+        logDisabled: false
+        includePacketData: false
+        alertEnabled: false
+      ServiceToken: !Sub 'arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:cfn-deep-security-provider'
+
+  RDPPortList:
+    Type: Custom::DeepSecurityPortList
+    Properties:
+      ServiceToken: !Sub 'arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:cfn-deep-security-provider'
+      Value:
+       name: My Remote Desktop
+       description: Ports for accessing a machine using remote desktop/terminal services
+       items:
+         - '3389 # Remote Desktop'
+
+Outputs:
+  RDPPortList:
+    Value: !Ref RDPPortList
+
+

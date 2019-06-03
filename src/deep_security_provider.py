@@ -46,6 +46,14 @@ class DeepSecurityProvider(ResourceProvider):
 
     def convert_property_types(self):
         self.heuristic_convert_property_types(self.properties)
+        if (
+            self.resource_type == "Custom::DeepSecurityFirewallRule"
+            and self.get("Value", {}).get("priority") is not None
+        ):
+            # priority is an integer, presented as string :-(
+            self.properties["Value"]["priority"] = str(
+                self.get("Value").get("priority")
+            )
 
     def is_supported_resource_type(self):
         return self.resource_type.startswith("Custom::DeepSecurity")
