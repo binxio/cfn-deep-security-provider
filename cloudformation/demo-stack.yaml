@@ -19,15 +19,15 @@ Resources:
     Type: Custom::DeepSecurityPolicy
     Properties:
       Value:
-        name: My Policy
+        name: My Managed Policy
         parentID: '{{lookup "policy" "Linux Server"}}'
         firewall:
-          state: 'on'
+          state: 'inherited'
           ruleIDs:
             - '{{lookup "firewallRule" "FTP Server"}}'
             - '{{lookup "firewallRule" "SMTP Server"}}'
         intrusionPrevention: 
-          state: 'on'
+          state: 'inherited'
           ruleIDs:
             - '{{lookup "intrusionPreventionRule" "Digium Asterisk RTP Comfort Noise Frame Processing Denial Of Service"}}'
       ServiceToken: !Sub 'arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:cfn-deep-security-provider'
