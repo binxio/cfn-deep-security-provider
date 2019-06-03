@@ -19,7 +19,7 @@ class TemplateSubstitutor(object):
         self.api_key = api_key
         self.api_version = api_version
         self.pattern = re.compile(
-            r'{{\s*(lookup)\s+"(?P<type>[^"]*)"\s+"(?P<name>[^"]*)"\s*}}', re.MULTILINE
+            r'{{\s*(lookup)\s+"(?P<ds_type>[^"]*)"\s+"(?P<name>[^"]*)"\s*}}', re.MULTILINE
         )
 
     def plural(self, name) -> str:
@@ -64,7 +64,7 @@ class TemplateSubstitutor(object):
         results, err = self.search(ds_type, search)
         if err:
             return None, err
-        if not len(results) > 1:
+        if len(results) != 1:
             return (
                 None,
                 f"expected single {ds_type} with name {name}, found {len(results)}",

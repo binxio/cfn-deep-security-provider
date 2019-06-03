@@ -26,6 +26,10 @@ Resources:
           ruleIDs:
             - '{{lookup "firewallRule" "FTP Server"}}'
             - '{{lookup "firewallRule" "SMTP Server"}}'
+        intrusionPrevention: 
+          state: 'on'
+          ruleIDs:
+            - '{{lookup "intrusionPreventionRule" "Digium Asterisk RTP Comfort Noise Frame Processing Denial Of Service"}}'
       ServiceToken: !Sub 'arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:cfn-deep-security-provider'
 
   FirewallRule:
