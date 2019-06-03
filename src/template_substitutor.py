@@ -22,27 +22,27 @@ class TemplateSubstitutor(object):
             r'{{\s*(lookup)\s+"(?P<type>[^"]*)"\s+"(?P<name>[^"]*)"\s*}}', re.MULTILINE
         )
 
-    def plural(self, name):
+    def plural(self, name) -> str:
         if name[-1] == "y":
             return f"{name[0:-1]}ies"
         else:
             return f"{name}s"
 
-    def _do_lookup(self, type, name):
-        search = {
-            "maxItems": 2,
-            "searchCriteria": [{"fieldName": "name", "stringValue": name}],
-        }
+    def search_url(self, ds_type: str) -> str:
+        return f"{self.api_endpoint}/{self.plural(ds_type).lower()}/search"
+
+    def search(self, ds_type: str, search: dict) -> (List[dict], List[str]):
         headers = {"api-version": self.api_version, "api-secret-key": self.api_key}
         try:
-            key_name = self.plural(type)
-            url = f"{self.api_endpoint}/{self.plural(type).lower()}/search"
-            response = requests.post(url, headers=headers, json=search)
+            key_name = self.plural(ds_type)
+            response = requests.post(
+                self.search_url(ds_type), headers=headers, json=search
+            )
 
             if response.status_code != 200:
                 return (
                     None,
-                    f"no type '{type}' found with the name '{name}'\n{response.status_code} - {response.text}",
+                    f"search for '{ds_type}' failed with status {response.status_code} - {response.text}",
                 )
 
             results = response.json()
@@ -52,18 +52,28 @@ class TemplateSubstitutor(object):
                     f"no field '{key_name}' expected in response, but it is missing.",
                 )
 
-            if not results[key_name] or len(results[key_name]) > 1:
-                return (
-                    None,
-                    f"expected single {type} with name {name}, found {len(results[key_name])}",
-                )
-
-            if "ID" not in results[key_name][0]:
-                return None, f"no field ID in in search result {key_name}"
-
-            return results[key_name][0]["ID"], None
+            return results[key_name], None
         except IOError as e:
-            return None, f"search for {type} with name {name} failed, {e}"
+            return None, f"search for {ds_type} failed, {e}"
+
+    def _do_lookup(self, ds_type, name) -> (str, List[str]):
+        search = {
+            "maxItems": 2,
+            "searchCriteria": [{"fieldName": "name", "stringValue": name}],
+        }
+        results, err = self.search(ds_type, search)
+        if err:
+            return None, err
+        if not len(results) > 1:
+            return (
+                None,
+                f"expected single {ds_type} with name {name}, found {len(results)}",
+            )
+
+        if "ID" not in results[0]:
+            return None, f"no field ID in in search result {ds_type}"
+
+        return results[0]["ID"], None
 
     def replace_references(self, value) -> (object, List[str]):
         if isinstance(value, str):
