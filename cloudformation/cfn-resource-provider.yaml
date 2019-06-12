@@ -56,7 +56,7 @@ Resources:
         S3Key: !Ref 'CFNCustomProviderZipFileName'
       FunctionName: cfn-deep-security-provider
       Handler: provider.handler
-      Timeout: 30
+      Timeout: 600
       MemorySize: 128
       Role: !GetAtt 'LambdaRole.Arn'
       Runtime: python3.7

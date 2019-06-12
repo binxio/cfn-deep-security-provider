@@ -19,7 +19,8 @@ class TemplateSubstitutor(object):
         self.api_key = api_key
         self.api_version = api_version
         self.pattern = re.compile(
-            r'{{\s*(lookup)\s+"(?P<ds_type>[^"]*)"\s+"(?P<name>[^"]*)"\s*}}', re.MULTILINE
+            r'{{\s*(lookup)\s+"(?P<ds_type>[^"]*)"\s+"(?P<name>[^"]*)"\s*}}',
+            re.MULTILINE,
         )
 
     def plural(self, name) -> str:
