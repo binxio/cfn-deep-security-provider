@@ -15,12 +15,18 @@ Resources:
         restrictedInterfacesEnabled: True
       ServiceToken: !Sub 'arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:cfn-deep-security-provider'
 
+  LinuxServerPolicy:
+    Type: Custom::DeepSecurityLookup
+    Properties:
+      Type: Policy
+      Name: Linux Server
+
   Policy:
     Type: Custom::DeepSecurityPolicy
     Properties:
       Value:
         name: My Managed Policy
-        parentID: '{{lookup "policy" "Linux Server"}}'
+        parentID: !Ref LinuxServerPolicy
         firewall:
           state: 'inherited'
           ruleIDs:
