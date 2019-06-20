@@ -5,7 +5,7 @@ The provider supports all the DeepSecurity resources of the [DeepSecurity API](h
 
 - Generic [Custom::DeepSecurity](docs/deepsecurity.md) resources like policies, rules, etc.
 - [Custom::DeepSecurityAWSCloudAccount](docs/deepsecurity-aws-cloudaccount.md) for automatic AWS account synchronization
-- [Custom::DeepSecurityLookup](docs/deepsecurity.md) to lookup ID's of existing resources like policies, rules, etc
+- [Custom::DeepSecurityLookup](docs/deepsecurity-lookup.md) to lookup ID's of existing resources like policies, rules, etc
 
 ### Deploy the provider
 To deploy the provider, type:
