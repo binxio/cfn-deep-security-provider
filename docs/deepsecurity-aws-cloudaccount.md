@@ -41,8 +41,8 @@ If you store these credentials in a different parameter, please specify the corr
 
 ## AWSAccountRequest
 You can specify the properties as defined by the DeepSecurity Legacy API
-(AddAwsAccountRequest)(https://automation.deepsecurity.trendmicro.com/legacy-rest/11_3/index.html?env=dsaas#create_aws_account) or 
-(UpdateAwsAccountRequest)(https://automation.deepsecurity.trendmicro.com/legacy-rest/11_3/index.html?env=dsaas#modify_aws_account).
+[AddAwsAccountRequest](https://automation.deepsecurity.trendmicro.com/legacy-rest/11_3/index.html?env=dsaas#create_aws_account) or 
+[UpdateAwsAccountRequest](https://automation.deepsecurity.trendmicro.com/legacy-rest/11_3/index.html?env=dsaas#modify_aws_account).
 
 We recommend the crossAccountRole configuration to avoid hardcoded access keys in your 
 CloudFormation template.
