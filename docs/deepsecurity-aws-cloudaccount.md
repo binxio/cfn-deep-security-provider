@@ -29,8 +29,7 @@ To create a DeepSecurity resource using your your AWS CloudFormation template, u
 ```
 
 ## Connection
-In order to be able to manage the DeepSecurity resources, you need to [add an user] (https://help.deepsecurity.trendmicro.com/user-management.html?cshid=administration_users#Create_new_users_) and 
-and store the username, password and tenant name in the parameter store.
+In order to be able to manage the DeepSecurity resources, you need to [add an user] (https://help.deepsecurity.trendmicro.com/user-management.html?cshid=administration_users#Create_new_users_) and and store the username, password and tenant name in the parameter store.
 
 ```
 aws ssm put-parameter --name /cfn-deep-security-provider/user --type SecureString --value="$USERNAME"

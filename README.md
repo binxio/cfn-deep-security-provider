@@ -21,3 +21,20 @@ aws cloudformation wait stack-create-complete  --stack-name cfn-deep-security-pr
 
 This CloudFormation template will use our pre-packaged provider from `s3://binxio-public/lambdas/cfn-deep-security-provider-latest.zip`.
 
+### Configuring access
+In order to be able to manage the DeepSecurity resources, you need to obtain create an [API key](https://help.deepsecurity.trendmicro.com/create-api-key.html) and 
+store it in the parameter store under the name `/cfn-deep-security-provider/api-key`.
+
+```
+aws ssm put-parameter --name /cfn-deep-security-provider/api-key --type SecureString --value="$API_KEY"
+```
+
+In order to create the [AWS Cloud Account](docs/deepsecurity-aws-cloudaccount.md)  you need to [add an user] (https://help.deepsecurity.trendmicro.com/user-management.html?cshid=administration_users#Create_new_users_) to access the [legacy API](https://automation.deepsecurity.trendmicro.com/legacy-rest/11_3/index.html?env=dsaas#aws_accounts).
+and store the username, password and tenant name in the parameter store.
+
+
+```
+aws ssm put-parameter --name /cfn-deep-security-provider/user --type SecureString --value="$USERNAME"
+aws ssm put-parameter --name /cfn-deep-security-provider/password --type SecureString --value="$PASSWORD"
+aws ssm put-parameter --name /cfn-deep-security-provider/tenant --type SecureString --value="$TENANT"
+```
