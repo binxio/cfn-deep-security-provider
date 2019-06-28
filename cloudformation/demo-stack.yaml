@@ -1,32 +1,88 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Description: Deep Security Demo Configuration
 Resources:
-  Context:
-    Type: Custom::DeepSecurityContext
+  DeepSecurityAWSCloudAccount:
+    Type: Custom::DeepSecurityAWSCloudAccount
+    DependsOn:
+      - CFNDeepSecurityProvider
     Properties:
-      Value:
-        name: My Context
-        description: Context
-        minimumAgentVersion: 6.0.0.0
-        localConnectionsEnabled: True
-        remoteConnectionsEnabled: False
-        noConnectionEnabled: False
-        noInternetEnabled: False
-        restrictedInterfacesEnabled: True
+      AWSAccountRequest:
+        crossAccountRole:
+          roleArn: !GetAtt 'DeepSecurityRole.Arn'
+          externalId: !GetAtt 'StsExternalId.Secret'
       ServiceToken: !Sub 'arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:cfn-deep-security-provider'
 
-  LinuxServerPolicy:
-    Type: Custom::DeepSecurityLookup
+  StsExternalId:
+    Type: AWS::SSM::Parameter
     Properties:
-      Type: Policy
-      Name: Linux Server
+      Name: /cfn-deep-security-provider/sts-external-id
+      Description: deep security STS external id
+      Type: String
+      Value: 7e4d5aa09fbae428cd726910aa754589
 
+  DeepSecurityRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: DeepSecurity
+      ManagedPolicyArns:
+        - !Ref 'DeepSecurityPolicy'
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              AWS: arn:aws:iam::147995105371:root
+            Action:
+              - sts:AssumeRole
+            Condition:
+              StringEquals:
+                sts:ExternalId:
+                  - !GetAtt 'StsExternalId.Secret'
+
+  DeepSecurityPolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      ManagedPolicyName: DeepSecurityPolicy
+      Description: TrendMicro DeepSecurity access policy
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Sid: '1'
+            Effect: Allow
+            Action:
+              - ec2:DescribeRegions
+              - ec2:DescribeImages
+              - ec2:DescribeInstances
+              - ec2:DescribeTags
+              - ec2:DescribeAvailabilityZones
+              - ec2:DescribeSecurityGroups
+              - ec2:DescribeSubnets
+              - ec2:DescribeVpcs
+              - iam:ListAccountAliases
+            Resource:
+              - '*'
+          - Sid: '2'
+            Effect: Allow
+            Action:
+              - iam:GetRole
+              - iam:GetRolePolicy
+            Resource:
+              - arn:aws:iam::*:role/DeepSecurity*
+          - Sid: '3'
+            Effect: Allow
+            Action:
+              - workspaces:DescribeWorkspaces
+              - workspaces:DescribeWorkspaceDirectories
+              - workspaces:DescribeWorkspaceBundles
+              - workspaces:DescribeTags
+            Resource:
+              - '*'
   Policy:
     Type: Custom::DeepSecurityPolicy
     Properties:
       Value:
         name: My Managed Policy
-        parentID: !Ref LinuxServerPolicy
+        parentID: '{{lookup "policy" "LinuxServer"}}'
         firewall:
           state: 'inherited'
           ruleIDs:
@@ -80,9 +136,3 @@ Resources:
        description: Ports for accessing a machine using remote desktop/terminal services
        items:
          - '3389 # Remote Desktop'
-
-Outputs:
-  RDPPortList:
-    Value: !Ref RDPPortList
-
-
