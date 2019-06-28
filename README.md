@@ -38,3 +38,15 @@ aws ssm put-parameter --name /cfn-deep-security-provider/user --type SecureStrin
 aws ssm put-parameter --name /cfn-deep-security-provider/password --type SecureString --value="$PASSWORD"
 aws ssm put-parameter --name /cfn-deep-security-provider/tenant --type SecureString --value="$TENANT"
 ```
+
+### Deploy the demo
+In order to deploy the demo, type:
+
+```sh
+aws cloudformation create-stack \
+        --capabilities CAPABILITY_NAMED_IAM \
+        --stack-name cfn-deep-security-provider-demp \
+        --template-body file://./cloudformation/demo.yaml
+
+aws cloudformation wait stack-create-complete  --stack-name cfn-deep-security-provider-demo
+```

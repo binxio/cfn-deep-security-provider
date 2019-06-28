@@ -1,29 +1,23 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Description: Deep Security Demo Configuration
+Parameters:
+  StsExternalId:
+    Type: String
+    Default: 7e4d5aa09fbae428cd726910aa754589
+
 Resources:
   DeepSecurityAWSCloudAccount:
     Type: Custom::DeepSecurityAWSCloudAccount
-    DependsOn:
-      - CFNDeepSecurityProvider
     Properties:
       AWSAccountRequest:
         crossAccountRole:
           roleArn: !GetAtt 'DeepSecurityRole.Arn'
-          externalId: !GetAtt 'StsExternalId.Secret'
+          externalId: !Ref StsExternalId
       ServiceToken: !Sub 'arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:cfn-deep-security-provider'
-
-  StsExternalId:
-    Type: AWS::SSM::Parameter
-    Properties:
-      Name: /cfn-deep-security-provider/sts-external-id
-      Description: deep security STS external id
-      Type: String
-      Value: 7e4d5aa09fbae428cd726910aa754589
 
   DeepSecurityRole:
     Type: AWS::IAM::Role
     Properties:
-      RoleName: DeepSecurity
       ManagedPolicyArns:
         - !Ref 'DeepSecurityPolicy'
       AssumeRolePolicyDocument:
@@ -37,7 +31,7 @@ Resources:
             Condition:
               StringEquals:
                 sts:ExternalId:
-                  - !GetAtt 'StsExternalId.Secret'
+                  - !Ref 'StsExternalId'
 
   DeepSecurityPolicy:
     Type: AWS::IAM::ManagedPolicy
@@ -82,7 +76,7 @@ Resources:
     Properties:
       Value:
         name: My Managed Policy
-        parentID: '{{lookup "policy" "LinuxServer"}}'
+        parentID: '{{lookup "policy" "Linux Server"}}'
         firewall:
           state: 'inherited'
           ruleIDs:

@@ -100,6 +100,7 @@ demo:
 		export CFN_COMMAND=create; export CFN_TIMEOUT="--timeout-in-minutes 10" ;\
 	fi ;\
 	aws cloudformation $$CFN_COMMAND-stack --stack-name $(NAME)-demo \
+		--capabilities CAPABILITY_NAMED_IAM \
 		--template-body file://cloudformation/demo-stack.yaml  \
 		$$CFN_TIMEOUT && \
 	aws cloudformation wait stack-$$CFN_COMMAND-complete --stack-name $(NAME)-demo;
