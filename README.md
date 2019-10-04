@@ -19,7 +19,7 @@ aws cloudformation create-stack \
 aws cloudformation wait stack-create-complete  --stack-name cfn-deep-security-provider
 ```
 
-This CloudFormation template will use our pre-packaged provider from `s3://binxio-public/lambdas/cfn-deep-security-provider-0.2.0.zip`.
+This CloudFormation template will use our pre-packaged provider from `s3://binxio-public/lambdas/cfn-deep-security-provider-0.2.1.zip`.
 
 ### Configuring access
 In order to be able to manage the DeepSecurity resources, you need to obtain create an [API key](https://help.deepsecurity.trendmicro.com/create-api-key.html) and 
