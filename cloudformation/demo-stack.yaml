@@ -132,13 +132,12 @@ Resources:
        items:
          - '3389 # Remote Desktop'
 
-  SNSInvokePermissionForDataDogEventForwarder:
+  GrantSNSInvokePermissionForDataDogEventForwarder:
     Type: AWS::Lambda::Permission
     Properties:
       Action: 'lambda:InvokeFunction'
       FunctionName: !Sub 'arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:deep-security-datadog-event-forwarder'
       Principal: sns.amazonaws.com
-      SourceAccount: !Ref 'AWS::AccountId'
       SourceArn: !Ref SNSTopic
 
   SNSTopic:
