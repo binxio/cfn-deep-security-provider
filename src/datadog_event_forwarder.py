@@ -18,6 +18,9 @@ def tags(tags: str = os.environ.get("DATADOG_TAGS", "")) -> List[str]:
     converts environment variable TAGS in the format tag=value,tag=value,tag=value to
     [ "tag:value", "tag:value", "tag:value" ]
     """
+    if not tags:
+        return []
+
     return list(
         map(
             lambda tag: f"{tag[0]}:{tag[1] if len(tag) > 1 else ''}",
@@ -82,6 +85,7 @@ def send_datadog_event(message_id: str, message: dict):
         date_happened=date_happened(message),
         tags=tags(),
         host="deepsecurity",
+        source_type_name="DeepSecurity",
     )
 
     if response["status"] != "ok":
@@ -129,12 +133,14 @@ def load_ssm_parameters(env: dict):
 
 
 def connect_to_datadog():
-    load_ssm_parameters(os.environ)
-    datadog.initialize(api_key=os.getenv("DATADOG_API_KEY", None))
+    if not datadog.api._api_host:
+        load_ssm_parameters(os.environ)
+        datadog.initialize(host_name="deepsecurity")
 
 
 def handler(event, context):
     connect_to_datadog()
+
     for sns in map(
         lambda r: r["Sns"], filter(lambda r: "Sns" in r, event.get("Records", []))
     ):
