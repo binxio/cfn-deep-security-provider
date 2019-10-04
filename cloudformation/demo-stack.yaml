@@ -8,6 +8,7 @@ Parameters:
 Resources:
   DeepSecurityAWSCloudAccount:
     Type: Custom::DeepSecurityAWSCloudAccount
+    DependsOn: DeepSecurityPolicy
     Properties:
       AWSAccountRequest:
         crossAccountRole:
@@ -130,3 +131,66 @@ Resources:
        description: Ports for accessing a machine using remote desktop/terminal services
        items:
          - '3389 # Remote Desktop'
+
+  SNSInvokePermissionForDataDogEventForwarder:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: 'lambda:InvokeFunction'
+      FunctionName: !Sub 'arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:deep-security-datadog-event-forwarder'
+      Principal: sns.amazonaws.com
+      SourceAccount: !Ref 'AWS::AccountId'
+      SourceArn: !Ref SNSTopic
+
+  SNSTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      DisplayName: DeepSecurityEvents
+      TopicName: DeepSecurityEvents
+      Subscription:
+        - Endpoint: !Sub 'arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:deep-security-datadog-event-forwarder'
+          Protocol: 'lambda'
+
+  DeepSecurityUser:
+    Type: AWS::IAM::User
+    Properties:
+      Policies:
+        - PolicyName: DeepSecurityEventPublisher
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - sns:Publish
+                  - sns:GetTopicAttributes
+                  - sns:ConfirmSubscription
+                  - sns:Subscribe
+                Resource:
+                  - !Ref 'SNSTopic'
+              - Effect: Allow
+                Action:
+                  - sns:Unsubscribe
+                  - sns:GetSubscriptionAttributes
+                Resource:
+                  - '*'
+      UserName: deep_security_event_publisher
+
+  DeepSecurityAccessKeys:
+    Type: AWS::IAM::AccessKey
+    Properties:
+      UserName: !Ref 'DeepSecurityUser'
+
+  SystemSetting:
+    Type: Custom::DeepSecuritySystemSetting
+    Properties:
+      Value:
+        platformSettingEventForwardingSnsAccessKey:
+          value: !Ref 'DeepSecurityAccessKeys'
+        platformSettingEventForwardingSnsSecretKey:
+          value: !GetAtt 'DeepSecurityAccessKeys.SecretAccessKey'
+        platformSettingEventForwardingSnsTopicArn:
+          value: !Ref 'SNSTopic'
+        platformSettingEventForwardingSnsAdvancedConfigEnabled:
+          value: 'false'
+        platformSettingEventForwardingSnsEnabled:
+          value: 'true'
+      ServiceToken: !Sub 'arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:cfn-deep-security-provider'

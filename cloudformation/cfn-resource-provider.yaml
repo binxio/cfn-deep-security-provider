@@ -84,10 +84,3 @@ Resources:
           DATADOG_API_KEY: ssm:///datadog/api-key
           DATADOG_TAGS: tag1=value1, tag2=value2
 
-  SNSInvokePermissionForDataDogEventForwarder:
-    Type: AWS::Lambda::Permission
-    Properties:
-      Action: 'lambda:InvokeFunction'
-      FunctionName: !GetAtt 'DatadogEventForwarder.Arn'
-      Principal: sns.amazonaws.com
-      SourceAccount: !Ref 'AWS::AccountId'
