@@ -6,7 +6,6 @@ from copy import copy
 from datetime import datetime
 import logging
 from datadog_event_forwarder import load_ssm_parameters
-from datadog_event_forwarder import connect_to_datadog
 from datadog_event_forwarder import handler
 from datadog_event_forwarder import tags
 from datadog_event_forwarder import date_happened
@@ -222,3 +221,14 @@ anti_malware_event = [
         "CreationTime": "2018-12-04T15:57:29.000Z",
     },
 ]
+
+
+if __name__ == "__main__":
+    sns = boto3.client("sns")
+    sts = boto3.client("sts")
+    response = sts.get_caller_identity()
+    topic = (
+        f'arn:aws:sns:{sns.meta.region_name}:{response["Account"]}:DeepSecurityEvents'
+    )
+    sns.publish(TopicArn=topic, Message=json.dumps(anti_malware_event))
+    sns.publish(TopicArn=topic, Message=json.dumps(system_event))
