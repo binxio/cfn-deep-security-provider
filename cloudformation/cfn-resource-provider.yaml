@@ -60,3 +60,34 @@ Resources:
       MemorySize: 128
       Role: !GetAtt 'LambdaRole.Arn'
       Runtime: python3.7
+
+  DatadogEventForwarder:
+    Type: AWS::Lambda::Function
+    DependsOn:
+      - LambdaRole
+    Properties:
+      Description: DeepSecurity -> DataDog SNS event forwarder
+      Code:
+        S3Bucket: !If
+          - UsePublicBucket
+          - !Sub 'binxio-public-${AWS::Region}'
+          - !Ref 'LambdaS3Bucket'
+        S3Key: !Ref 'CFNCustomProviderZipFileName'
+      FunctionName: deep-security-datadog-event-forwarder
+      Handler: datadog_event_forwarder.handler
+      Timeout: 600
+      MemorySize: 128
+      Role: !GetAtt 'LambdaRole.Arn'
+      Runtime: python3.7
+      Environment:
+        Variables:
+          DATADOG_API_KEY: ssm:///datadog/api-key
+          DATADOG_TAGS: tag1=value1, tag2=value2
+
+  SNSInvokePermissionForDataDogEventForwarder:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: 'lambda:InvokeFunction'
+      FunctionName: !GetAtt 'DatadogEventForwarder.Arn'
+      Principal: sns.amazonaws.com
+      SourceAccount: !Ref 'AWS::AccountId'

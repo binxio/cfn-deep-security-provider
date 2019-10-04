@@ -3,3 +3,4 @@ boto3
 requests
 cfn_resource_provider>=1.0.1
 ruamel.yaml
+datadog
