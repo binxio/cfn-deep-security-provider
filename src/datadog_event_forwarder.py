@@ -84,7 +84,7 @@ def send_datadog_event(message_id: str, message: dict):
         text=message.get("Description", message_id),
         date_happened=date_happened(message),
         tags=tags(),
-        host="deepsecurity",
+        host=message.get("Hostname", "app.deepsecurity.trendmicro.com"),
         source_type_name="DeepSecurity",
     )
 
@@ -135,7 +135,7 @@ def load_ssm_parameters(env: dict):
 def connect_to_datadog():
     if not datadog.api._api_host:
         load_ssm_parameters(os.environ)
-        datadog.initialize(host_name="deepsecurity")
+        datadog.initialize(host_name="app.deepsecurity.trendmicro.com")
 
 
 def handler(event, context):
