@@ -1,13 +1,16 @@
-import os
 import json
-import boto3
-from botocore.exceptions import ClientError
+import logging
+import os
+from datetime import datetime
 from json.decoder import JSONDecodeError
 from typing import List
-from urllib.parse import urlparse, parse_qs
+from urllib.parse import parse_qs, urlparse
+from io import StringIO
+
+import boto3
 import datadog
-from datetime import datetime
-import logging
+from botocore.exceptions import ClientError
+from ruamel.yaml import YAML
 
 logging.basicConfig(level=os.getenv("LOG_LEVEL", "INFO"))
 log = logging.getLogger()
@@ -74,14 +77,30 @@ def log_level(message: dict) -> str:
         return "info"
 
 
+def message_to_text(message: dict) -> str:
+    yaml = YAML()
+    result = StringIO()
+    if message.get("Description"):
+        result.write(message.get("Description"))
+        result.write("\n")
+    yaml.dump(message, result)
+    return result.getvalue()
+
+
+def message_to_title(message_id, message: dict) -> str:
+    event_type = message.get("EventType", "Unknown")
+    title = message.get("Title", "message id " + message_id)
+    return f"{event_type} : {title}"
+
+
 def send_datadog_event(message_id: str, message: dict):
     log.debug("forwarding event %s to datadog", message_id)
-
+    yaml = YAML()
     response = datadog.api.Event.create(
         priority="normal",
         alert_type=log_level(message),
-        title=message.get("Title", message_id),
-        text=message.get("Description", message_id),
+        title=message_to_title(message_id, message),
+        text=message_to_text(message),
         date_happened=date_happened(message),
         tags=tags(),
         host=message.get("Hostname", "app.deepsecurity.trendmicro.com"),
