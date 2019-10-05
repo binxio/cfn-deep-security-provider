@@ -6,6 +6,7 @@ from json.decoder import JSONDecodeError
 from typing import List
 from urllib.parse import parse_qs, urlparse
 from io import StringIO
+from copy import copy
 
 import boto3
 import datadog
@@ -77,12 +78,42 @@ def log_level(message: dict) -> str:
         return "info"
 
 
+def message_hostname(message: dict) -> str:
+    if "Hostname" in message:
+        return message["Hostname"]
+    if message.get("TargetType") == "Host" and "TargetName" in message:
+        return message["TargetName"]
+    return "app.deepsecurity.trendmicro.com"
+
+
 def message_to_text(message: dict) -> str:
-    yaml = YAML()
     result = StringIO()
+    message = copy(message)
+
     if message.get("Description"):
         result.write(message.get("Description"))
         result.write("\n")
+        message.pop("Description")
+
+    if "Title" in message:
+        message.pop("Title")
+
+    if "LogDate" in message:
+        message.pop("LogDate")
+
+    to_remove = list(
+        filter(
+            lambda k: isinstance(message[k], int) and f"{k}String" in message,
+            message.keys(),
+        )
+    )
+    for key in to_remove:
+        key_str = f"{key}String"
+        v = message[key_str]
+        message[key] = v
+        message.pop(key_str)
+
+    yaml = YAML()
     yaml.dump(message, result)
     return result.getvalue()
 
@@ -103,7 +134,7 @@ def send_datadog_event(message_id: str, message: dict):
         text=message_to_text(message),
         date_happened=date_happened(message),
         tags=tags(),
-        host=message.get("Hostname", "app.deepsecurity.trendmicro.com"),
+        host=message_hostname(message),
         source_type_name="DeepSecurity",
     )
 
