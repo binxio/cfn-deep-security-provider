@@ -90,16 +90,17 @@ def message_to_text(message: dict) -> str:
     result = StringIO()
     message = copy(message)
 
-    if message.get("Description"):
-        result.write(message.get("Description"))
-        result.write("\n")
-        message.pop("Description")
+    for name, value in map(
+        lambda name: (name, message.get(name)), ["Description", "OSSEC_Log"]
+    ):
+        if value:
+            result.write(value)
+            result.write("\n")
+            break
 
-    if "Title" in message:
-        message.pop("Title")
-
-    if "LogDate" in message:
-        message.pop("LogDate")
+    for name in ["Title", "Description", "LogDate", "OSSEC_Description", "OSSEC_Log"]:
+        if name in message:
+            message.pop(name)
 
     to_remove = list(
         filter(
@@ -120,7 +121,9 @@ def message_to_text(message: dict) -> str:
 
 def message_to_title(message_id, message: dict) -> str:
     event_type = message.get("EventType", "Unknown")
-    title = message.get("Title", "message id " + message_id)
+    title = message.get(
+        "Title", message.get("OSSEC_Description", "message id " + message_id)
+    )
     return f"{event_type} : {title}"
 
 
