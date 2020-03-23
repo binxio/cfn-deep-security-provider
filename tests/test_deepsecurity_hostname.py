@@ -1,18 +1,19 @@
-from datadog_event_forwarder import hostname_tags, dict_to_datadog_tags
+from datadog_event_forwarder import hostname_tags
 from collections import OrderedDict
 
 
 def test_full_match():
-    ds_name = "10.0.5.82 (ecs-instance.dev-api) [i-0dc90ac2a869a8c8e]"
+    ds_name = "ec2-3-123-36-92.eu-central-1.compute.amazonaws.com (ebms.prod-api) [i-0187d96402df8c28d]"
     h, tags = hostname_tags(ds_name)
-    assert tags == ["name:ecs-instance.dev-api", f"dsname:{ds_name}"]
+    assert h == 'i-0187d96402df8c28d'
+    assert tags == ["name:ebms.prod-api"]
 
 
 def test_half_match():
     ds_name = "10.0.5.82 () [i-0dc90ac2a869a8c8e]"
     h, tags = hostname_tags(ds_name)
     assert h == "i-0dc90ac2a869a8c8e"
-    assert tags == [f"dsname:{ds_name}"]
+    assert tags == []
 
 
 def test_empty_match():

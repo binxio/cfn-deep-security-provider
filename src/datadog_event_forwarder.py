@@ -87,19 +87,14 @@ def message_hostname(message: dict) -> str:
     return "app.deepsecurity.trendmicro.com"
 
 def hostname_tags(hostname: str) -> (str, dict):
-    m = re.match(r'(?P<fqdn>.*)\s*\((?P<name>[^)]*)\)\s+\[(?P<host>[^\]]*)\]', hostname)
-    if m and m.group("host"):
-        name = m.group("name")
-        if name:
-            return (m.group("host"), [f"name:{name}", f"dsname:{hostname}"])
-        else:
-            return (m.group("host"), [f"dsname:{hostname}"])
-    else:
-        return (hostname, [])
+    tags = []
+    m = re.match(r'(?P<fqdn>.*)\s*\((?P<name>[^)]*)\)\s+\[(?P<instanceid>i-[^\]]*)\]', hostname)
+    if m and m.group("instanceid"):
+        hostname = m.group("instanceid")
+    if m and m.group("name"):
+        tags.append(f"name:{m.group('name')}")
 
-
-def dict_to_datadog_tags(d: dict) -> List[str]:
-    return [f'{k}:{v}' for k,v in d.items()]
+    return (hostname, tags)
 
 def message_to_text(message: dict) -> str:
     result = StringIO()
