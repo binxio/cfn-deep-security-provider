@@ -1,6 +1,7 @@
 import json
 import logging
 import os
+import re
 from datetime import datetime
 from json.decoder import JSONDecodeError
 from typing import List
@@ -85,6 +86,20 @@ def message_hostname(message: dict) -> str:
         return message["TargetName"]
     return "app.deepsecurity.trendmicro.com"
 
+def hostname_tags(hostname: str) -> (str, dict):
+    m = re.match(r'(?P<fqdn>.*)\s*\((?P<name>[^)]*)\)\s+\[(?P<host>[^\]]*)\]', hostname)
+    if m and m.group("host"):
+        name = m.group("name")
+        if name:
+            return (m.group("host"), [f"name:{name}", f"dsname:{hostname}"])
+        else:
+            return (m.group("host"), [f"dsname:{hostname}"])
+    else:
+        return (hostname, [])
+
+
+def dict_to_datadog_tags(d: dict) -> List[str]:
+    return [f'{k}:{v}' for k,v in d.items()]
 
 def message_to_text(message: dict) -> str:
     result = StringIO()
@@ -130,14 +145,17 @@ def message_to_title(message_id, message: dict) -> str:
 def send_datadog_event(message_id: str, message: dict):
     log.debug("forwarding event %s to datadog", message_id)
     yaml = YAML()
+    hostname, datadog_tags = hostname_tags(message_hostname(message))
+    datadog_tags.extend(tags())
+
     response = datadog.api.Event.create(
         priority="normal",
         alert_type=log_level(message),
         title=message_to_title(message_id, message),
         text=message_to_text(message),
         date_happened=date_happened(message),
-        tags=tags(),
-        host=message_hostname(message),
+        tags=datadog_tags,
+        host=hostname,
         source_type_name="DeepSecurity",
     )
 
