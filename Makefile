@@ -5,7 +5,10 @@ AWS_REGION=eu-central-1
 S3_BUCKET_PREFIX=binxio-public
 S3_BUCKET=$(S3_BUCKET_PREFIX)-$(AWS_REGION)
 
-ALL_REGIONS=$(shell printf "import boto3\nprint('\\\n'.join(map(lambda r: r['RegionName'], boto3.client('ec2').describe_regions()['Regions'])))\n" | python | grep -v '^$(AWS_REGION)$$')
+ALL_REGIONS=$(shell aws --region $(AWS_REGION) \
+		ec2 describe-regions 		\
+		--query 'join(`\n`, Regions[?RegionName != `$(AWS_REGION)`].RegionName)' \
+		--output text)
 
 help:
 	@echo 'make                 - builds a zip file to target/.'
@@ -54,39 +57,26 @@ target/$(NAME)-$(VERSION).zip: src/*.py requirements.txt Dockerfile.lambda
 		docker rm -f $$ID && \
 		chmod ugo+r target/$(NAME)-$(VERSION).zip
 
-venv: requirements.txt
-	virtualenv -p python3 venv  && \
-	. ./venv/bin/activate && \
-	pip install --quiet --upgrade pip && \
-	pip install --quiet -r requirements.txt
-
 clean:
 	rm -rf venv target
 	rm -rf src/*.pyc tests/*.pyc
 
-test: venv
+test:
+	pipenv sync -d
 	for i in $$PWD/cloudformation/*; do \
 		aws cloudformation validate-template --template-body file://$$i > /dev/null || exit 1; \
 	done
-	. ./venv/bin/activate && \
-	pip install --quiet -r requirements.txt -r test-requirements.txt && \
-	cd src && \
-        PYTHONPATH=$(PWD)/src pytest ../tests/test*.py
+	PYTHONPATH=$(PWD)/src pipenv run pytest tests/test*.py
 
 fmt:
 	black src/*.py tests/*.py
 
 deploy-provider:
-	@set -x ;if aws cloudformation get-template-summary --stack-name $(NAME) >/dev/null 2>&1 ; then \
-		export CFN_COMMAND=update; \
-	else \
-		export CFN_COMMAND=create; \
-	fi ;\
-	aws cloudformation $$CFN_COMMAND-stack \
+	aws cloudformation deploy \
 		--capabilities CAPABILITY_IAM \
 		--stack-name $(NAME) \
-		--template-body file://cloudformation/cfn-resource-provider.yaml \
-		--parameters ParameterKey=CFNCustomProviderZipFileName,ParameterValue=lambdas/$(NAME)-$(VERSION).zip; \
+		--template-file ./cloudformation/cfn-resource-provider.yaml \
+		--parameter-overrides CFNCustomProviderZipFileName=lambdas/$(NAME)-$(VERSION).zip; \
 	aws cloudformation wait stack-$$CFN_COMMAND-complete --stack-name $(NAME) ;
 
 delete-provider:
@@ -94,16 +84,9 @@ delete-provider:
 	aws cloudformation wait stack-delete-complete  --stack-name $(NAME)
 
 demo: 
-	@if aws cloudformation get-template-summary --stack-name $(NAME)-demo >/dev/null 2>&1 ; then \
-		export CFN_COMMAND=update; export CFN_TIMEOUT="" ;\
-	else \
-		export CFN_COMMAND=create; export CFN_TIMEOUT="--timeout-in-minutes 10" ;\
-	fi ;\
-	aws cloudformation $$CFN_COMMAND-stack --stack-name $(NAME)-demo \
+	aws cloudformation deploy --stack-name $(NAME)-demo \
 		--capabilities CAPABILITY_NAMED_IAM \
-		--template-body file://cloudformation/demo-stack.yaml  \
-		$$CFN_TIMEOUT && \
-	aws cloudformation wait stack-$$CFN_COMMAND-complete --stack-name $(NAME)-demo;
+		--template-file ./cloudformation/demo-stack.yaml
 
 delete-demo:
 	aws cloudformation delete-stack --stack-name $(NAME)-demo

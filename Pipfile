@@ -1,0 +1,18 @@
+[[source]]
+name = "pypi"
+url = "https://pypi.org/simple"
+verify_ssl = true
+
+[dev-packages]
+pytest = "*"
+
+[packages]
+urllib3 = "==1.24.3"
+boto3 = "*"
+requests = "*"
+cfn-resource-provider = ">=1.0.1"
+datadog = "*"
+"ruamel.yaml" = "*"
+
+[requires]
+python_version = "3.8"
