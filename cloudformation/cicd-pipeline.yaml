@@ -61,14 +61,14 @@ Resources:
                   - !Sub 'arn:aws:s3:::${S3BucketPrefix}-*'
               - Effect: Allow
                 Action:
+                  - s3:GetObject
                   - s3:PutObject
                   - s3:PutObjectAcl
                 Resource: 
                   - !Sub 'arn:aws:s3:::${S3BucketPrefix}-*/lambdas/cfn-deep-security-provider-*'
               - Effect: Allow
                 Action:
-                  - ec2:DescribeInstances
-                  - ec2:DescribeInstanceStatus
+                  - ec2:DescribeRegions
                 Resource: 
                   - '*'
               - Sid: CloudWatchLogsPolicy
