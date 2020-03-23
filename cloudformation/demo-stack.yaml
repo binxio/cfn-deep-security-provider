@@ -1,9 +1,20 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Description: Deep Security Demo Configuration
 Parameters:
+  ForwardEventsToSNS:
+    Type: String
+    AllowedValues: ['yes', 'no']
+    Default: 'no'
+    Description: |-
+      Forwarding events to AWS SNS requires overriding the current DeepSecurity global system settings.
   StsExternalId:
     Type: String
     Default: 7e4d5aa09fbae428cd726910aa754589
+
+Conditions:
+  ForwardEvents: !Equals
+    - !Ref 'ForwardEventsToSNS'
+    - 'yes'
 
 Resources:
   DeepSecurityAWSCloudAccount:
@@ -179,7 +190,13 @@ Resources:
       UserName: !Ref 'DeepSecurityUser'
 
   SystemSetting:
+    Condition: ForwardEvents
     Type: Custom::DeepSecuritySystemSetting
+    ##
+    ## Beware! Although modeled as a Resource, DeepSecuritySystemSetting
+    ## is a global variable. It will override the current setting, and will not undo
+    ## when deleted.
+    ##
     Properties:
       Value:
         platformSettingEventForwardingSnsAccessKey:
