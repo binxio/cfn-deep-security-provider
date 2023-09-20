@@ -7,7 +7,7 @@ verify_ssl = true
 pytest = "*"
 
 [packages]
-urllib3 = "==1.24.3"
+urllib3 = "*"
 boto3 = "*"
 requests = "*"
 cfn-resource-provider = ">=1.0.1"
@@ -15,4 +15,4 @@ datadog = "*"
 "ruamel.yaml" = "*"
 
 [requires]
-python_version = "3.8"
+python_version = "3.9"
